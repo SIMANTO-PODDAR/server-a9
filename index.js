@@ -1,7 +1,7 @@
 // const dns = require("node:dns");
 // dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 
 const cors = require('cors');
@@ -49,6 +49,17 @@ async function run() {
             const result = await carsCollection.find({
                 Status: "Available"
             }).limit(6).toArray();
+            res.json(result);
+        });
+
+
+        app.get("/all-cars/:id", async (req, res) => {         // Get 1 car data
+            const { id } = req.params;
+
+            const result = await carsCollection.findOne({
+                _id: new ObjectId(id)
+            });
+
             res.json(result);
         });
 
