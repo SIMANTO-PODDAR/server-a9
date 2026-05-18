@@ -45,7 +45,12 @@ async function run() {
             res.json(result);
         });
 
-
+        app.get('/available-cars', async (req, res) => {        // AvailableCars
+            const result = await carsCollection.find({
+                Status: "Available"
+            }).limit(6).toArray();
+            res.json(result);
+        });
 
 
         //----------------------------------------//
