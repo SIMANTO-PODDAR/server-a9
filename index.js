@@ -34,6 +34,11 @@ async function run() {
         const carsCollection = db.collection('all-cars');
 
         //---------     API Endpoint     ---------\\
+        app.get('/all-cars', async (req, res) => {             // for ALL car data
+            const result = await carsCollection.find().toArray();
+            res.json(result);
+        });
+
 
 
         //----------------------------------------//
