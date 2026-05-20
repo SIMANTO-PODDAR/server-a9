@@ -34,18 +34,18 @@ async function run() {
         const carsCollection = db.collection('all-cars');
 
         //---------     API Endpoint     ---------\\
-        app.get('/all-cars', async (req, res) => {             // for ALL car data
+        app.get('/all-cars', async (req, res) => {                // for ALL car data
             const result = await carsCollection.find().toArray();
             res.json(result);
         });
 
-        app.post('/all-cars', async (req, res) => {            // ADD 1 car data
+        app.post('/all-cars', async (req, res) => {               // ADD 1 car data
             const carData = req.body;
             const result = await carsCollection.insertOne(carData);
             res.json(result);
         });
 
-        app.get('/available-cars', async (req, res) => {        // AvailableCars
+        app.get('/available-cars', async (req, res) => {          // AvailableCars
             const result = await carsCollection.find({
                 Status: "Available"
             }).limit(6).toArray();
@@ -53,7 +53,7 @@ async function run() {
         });
 
 
-        app.get("/all-cars/:id", async (req, res) => {         // Get 1 car data
+        app.get("/all-cars/:id", async (req, res) => {            // Get 1 car data
             const { id } = req.params;
 
             const result = await carsCollection.findOne({
@@ -64,7 +64,7 @@ async function run() {
         });
 
 
-        app.get('/added-cars/:userId', async (req, res) => {  // Get cars added by user
+        app.get('/added-cars/:userId', async (req, res) => {      // Get cars added by user
             const { userId } = req.params;
 
             const result = await carsCollection.find({
@@ -84,6 +84,20 @@ async function run() {
 
             res.json(result);
         });
+
+
+        app.patch("/all-cars/:carId", async (req, res) => {       // Update 1 car data
+            const { carId } = req.params;
+            const carData = req.body;
+
+            // console.log(carData);
+            const result = await carsCollection.updateOne(
+                { _id: new ObjectId(carId) },
+                { $set: carData },
+            );
+            res.json(result);
+        });
+
 
 
         //----------------------------------------//
