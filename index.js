@@ -100,6 +100,17 @@ async function run() {
 
 
 
+        // New collection Bookings data
+        const bookingsCollection = db.collection('drive-fleet-bookings');
+
+        app.post("/all-bookings", async (req, res) => {           // Add 1 Booking data
+            const Data = req.body;
+            const result = await bookingsCollection.insertOne(Data);
+
+            res.json(result);
+        });
+
+
         //----------------------------------------//
         await client.db("admin").command({ ping: 1 });      //   <--- !
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
