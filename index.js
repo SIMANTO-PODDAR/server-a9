@@ -28,7 +28,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        //   await client.connect();                              <--- !
+        await client.connect();                              //   <--- !
 
         const db = client.db('drive-fleet');
         const carsCollection = db.collection('all-cars');
@@ -120,9 +120,20 @@ async function run() {
             res.json(result);
         });
 
+        app.get('/all-bookings/:userId', async (req, res) => {    // Get bookings data
+            const { userId } = req.params;
+
+            const result = await bookingsCollection.find({
+                userId: userId
+            }).toArray();
+
+            res.json(result);
+        });
+
+
 
         //----------------------------------------//
-        //   await client.db("admin").command({ ping: 1 });      <--- !
+        await client.db("admin").command({ ping: 1 });      //   <--- !
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // await client.close();
