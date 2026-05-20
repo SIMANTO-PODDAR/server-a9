@@ -28,7 +28,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        await client.connect();                              //   <--- !
+        //   await client.connect();                              <--- !
 
         const db = client.db('drive-fleet');
         const carsCollection = db.collection('all-cars');
@@ -107,12 +107,22 @@ async function run() {
             const Data = req.body;
             const result = await bookingsCollection.insertOne(Data);
 
+            if (result.insertedId) {
+                await carsCollection.updateOne(
+                    { _id: new ObjectId(Data.CarId) },
+
+                    {
+                        $inc: { BookBy: +1 }
+                    }
+                );
+            };
+
             res.json(result);
         });
 
 
         //----------------------------------------//
-        await client.db("admin").command({ ping: 1 });      //   <--- !
+        //   await client.db("admin").command({ ping: 1 });      <--- !
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // await client.close();
