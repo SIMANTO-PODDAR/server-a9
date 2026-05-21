@@ -6,6 +6,7 @@ const express = require('express');
 
 const cors = require('cors');
 const dotenv = require('dotenv');
+const { jwtVerify, createRemoteJWKSet } = require('jose-cjs');
 
 const app = express();
 app.use(cors());
@@ -24,22 +25,48 @@ const client = new MongoClient(uri, {
     }
 });
 
+const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
 
+const middleware = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const userToken = authHeader.split(" ")[1];
+
+    if (!userToken) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    try {
+        const { payload } = await jwtVerify(userToken, JWKS);
+        next();
+    }
+
+    catch (error) {
+        return res.status(403).json({ message: "Invalid token" });
+    }
+};
 
 async function run() {
     try {
-        await client.connect();                              //   <--- !
+        //   await client.connect();                              <--- !
 
         const db = client.db('drive-fleet');
         const carsCollection = db.collection('all-cars');
 
         //---------     API Endpoint     ---------\\
         app.get('/all-cars', async (req, res) => {                // for ALL car data
-            const result = await carsCollection.find().toArray();
+            const result = await carsCollection.find({
+                Name: { $exists: true }
+            }).toArray();
+
             res.json(result);
         });
 
-        app.post('/all-cars', async (req, res) => {               // ADD 1 car data
+        app.post('/all-cars', middleware, async (req, res) => {   // ADD 1 car data
             const carData = req.body;
             const result = await carsCollection.insertOne(carData);
             res.json(result);
@@ -64,7 +91,7 @@ async function run() {
         });
 
 
-        app.get('/added-cars/:userId', async (req, res) => {      // Get cars added by user
+        app.get('/added-cars/:userId', middleware, async (req, res) => {      // Get cars added by user
             const { userId } = req.params;
 
             const result = await carsCollection.find({
@@ -120,7 +147,7 @@ async function run() {
             res.json(result);
         });
 
-        app.get('/all-bookings/:userId', async (req, res) => {    // Get bookings data
+        app.get('/all-bookings/:userId', middleware, async (req, res) => {    // Get bookings data
             const { userId } = req.params;
 
             const result = await bookingsCollection.find({
@@ -133,7 +160,7 @@ async function run() {
 
 
         //----------------------------------------//
-        await client.db("admin").command({ ping: 1 });      //   <--- !
+        //   await client.db("admin").command({ ping: 1 });      <--- !
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // await client.close();
