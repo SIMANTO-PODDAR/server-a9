@@ -60,10 +60,11 @@ async function run() {
         //---------     API Endpoint     ---------\\
         app.get('/all-cars', async (req, res) => {                // for ALL car data
             try {
-                const search = req.query.search || "";
-                const type = req.query.type || "";
+                const search = req.query.search || null;
+                const type = req.query.type || null;
 
                 const query = {};
+                // console.log('1a', search, '2a', type, '3a', query)
 
                 if (search) {
                     query.Name = {
@@ -75,6 +76,8 @@ async function run() {
                 if (type) {
                     query.Type = type;
                 }
+
+                // console.log('1b', search, '2b', type, '3b', query)
 
                 const result = await carsCollection.find(query).toArray();
                 res.json(result);
