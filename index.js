@@ -59,11 +59,30 @@ async function run() {
 
         //---------     API Endpoint     ---------\\
         app.get('/all-cars', async (req, res) => {                // for ALL car data
-            const result = await carsCollection.find({
-                Name: { $exists: true }
-            }).toArray();
+            try {
+                const search = req.query.search || "";
+                const type = req.query.type || "";
 
-            res.json(result);
+                const query = {};
+
+                if (search) {
+                    query.Name = {
+                        $regex: search,
+                        $options: "i"
+                    };
+                }
+
+                if (type) {
+                    query.Type = type;
+                }
+
+                const result = await carsCollection.find(query).toArray();
+                res.json(result);
+
+            } catch (error) {
+                console.error("Error fetching filtered cars:", error);
+                res.status(404).json({ error: "Failed to fetch cars data" });
+            }
         });
 
         app.post('/all-cars', middleware, async (req, res) => {   // ADD 1 car data
